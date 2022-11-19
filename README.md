@@ -19,7 +19,7 @@ npm install sys-clipboard
 ## Usage
 
 ```typescript
-import sysClipboard from 'sysClipboard';
+import { sysClipboard } from 'sys-clipboard';
 
 async function readWriteText() {
   await sysClipboard.writeText('some text');
@@ -41,17 +41,13 @@ async function copyPasteFiles() {
   await sysClipboard.pasteFiles('Cut', './', './source1.png', './source2.png');
 }
 copyPasteFiles();
-
-//For windows 
-  await sysClipboard.writeFiles('./source.png', './some.png'); // only windows
-  console.log(await sysClipboard.readFiles()); // only windows
 ```
 
 ## API
 ```typescript
 export interface SysClipboard {
   readText(): Promise<string>;
-  writeText: (text: string) => Promise<void>;
+  writeText(text: string): Promise<void>;
   readImage(file?: string): Promise<Buffer>;
   writeImage(file: string | Buffer): Promise<void>;
   readFiles(): Promise<Array<string>>;
