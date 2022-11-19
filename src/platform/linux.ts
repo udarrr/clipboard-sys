@@ -4,11 +4,11 @@ import pathLib from 'path';
 import { SysClipboard } from '../..';
 
 export default class LinuxClipboard implements SysClipboard {
-  readFilesFrom(): Promise<Array<string>> {
+  readFiles(): Promise<Array<string>> {
     throw new Error('Method not implemented.');
   }
 
-  async pasteFilesFrom(action: 'Copy' | 'Cut', destinationFolder: string, ...files: Array<string>): Promise<void> {
+  async pasteFiles(action: 'Copy' | 'Cut', destinationFolder: string, ...files: Array<string>): Promise<void> {
     if(action === 'Copy'){
       await execa(`xclip-copyfile ${files.join(' ')}`, {
         stdio: 'inherit',
@@ -26,11 +26,11 @@ export default class LinuxClipboard implements SysClipboard {
     });
   }
 
-  copyFilesTo(...files: string[]): Promise<boolean> {
+  writeFiles(...files: string[]): Promise<boolean> {
     throw new Error('Method not implemented.');
   }
 
-  async readTextFrom(): Promise<string> {
+  async readText(): Promise<string> {
     const { stdout, stderr } = await execa('xclip  -selection clipboard -o', {
       shell: true,
       stripFinalNewline: false,
@@ -42,7 +42,7 @@ export default class LinuxClipboard implements SysClipboard {
     return stdout;
   }
 
-  async writeTextTo(text: string): Promise<void> {
+  async writeText(text: string): Promise<void> {
     try {
       await execa.sync(`echo -n '${text}' | xclip -r -selection clipboard`, {
         stdin: 'inherit',
@@ -56,7 +56,7 @@ export default class LinuxClipboard implements SysClipboard {
     }
   }
 
-  async readImageFrom(file?: string): Promise<Buffer> {
+  async readImage(file?: string): Promise<Buffer> {
     const { stdout, stderr } = await execa('xclip -selection clipboard -t image/png -o | base64', { shell: true });
 
     if (stderr) {
@@ -74,7 +74,7 @@ export default class LinuxClipboard implements SysClipboard {
     }
   }
 
-  async writeImageTo(file: string | Buffer): Promise<void> {
+  async writeImage(file: string | Buffer): Promise<void> {
     let path = ''
 
     if (typeof file !== 'string') {

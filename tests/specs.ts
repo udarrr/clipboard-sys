@@ -19,8 +19,8 @@ describe('Read text from clipboard', () => {
   after(async () => {});
 
   it('Write read text clipboard', async () => {
-    await sysClipboard.writeTextTo(testText);
-    const text = await sysClipboard.readTextFrom();
+    await sysClipboard.writeText(testText);
+    const text = await sysClipboard.readText();
 
     expect(text).to.be.equal(testText);
   });
@@ -30,8 +30,8 @@ describe('Read text from clipboard', () => {
     const pathToReadPic = path.join(process.cwd(), 'tests', 'data', 'readPic.png');
     const sizeTestPic = sizeOfImage(pathToTestPic);
 
-    await sysClipboard.writeImageTo(pathToTestPic);
-    await sysClipboard.readImageFrom(pathToReadPic);
+    await sysClipboard.writeImage(pathToTestPic);
+    await sysClipboard.readImage(pathToReadPic);
 
     const sizeReadPic = sizeOfImage(pathToReadPic);
 
@@ -51,8 +51,8 @@ describe('Read text from clipboard', () => {
     const bufferTempPic = await fs.readFile(pathToTestPic);
     const sizeTestPic = sizeOf(bufferTempPic);
 
-    await sysClipboard.writeImageTo(bufferTempPic);
-    const bufferReadPic = await sysClipboard.readImageFrom();
+    await sysClipboard.writeImage(bufferTempPic);
+    const bufferReadPic = await sysClipboard.readImage();
 
     const sizeReadPic = sizeOf(bufferReadPic);
 
@@ -69,8 +69,8 @@ describe('Read text from clipboard', () => {
     it('Read files clipboard', async () => {
       const pathToTestFile = path.join(process.cwd(), 'tests', 'data', 'from', 'testFile.txt');
   
-      await sysClipboard.copyFilesTo(pathToTestFile, pathToTestFile, pathToTestFile);
-      const files = await sysClipboard.readFilesFrom();
+      await sysClipboard.writeFiles(pathToTestFile, pathToTestFile, pathToTestFile);
+      const files = await sysClipboard.readFiles();
   
       expect(files.every((f) => fs.existsSync(f))).to.be.equal(true);
     });
@@ -83,9 +83,9 @@ describe('Read text from clipboard', () => {
     const pathToCopiedFile = path.join(destinationFolder, 'testFile.txt');
 
     if(process.platform === 'win32'){
-      await sysClipboard.copyFilesTo(pathToTestFile);
+      await sysClipboard.writeFiles(pathToTestFile);
     }
-    await sysClipboard.pasteFilesFrom('Copy', destinationFolder, pathToTestFile);
+    await sysClipboard.pasteFiles('Copy', destinationFolder, pathToTestFile);
     const isExist = fs.existsSync(pathToCopiedFile);
 
     try {
@@ -103,9 +103,9 @@ describe('Read text from clipboard', () => {
     const pathToCopiedFile = path.join(destinationFolder, 'testFile.txt');
 
     if(process.platform === 'win32'){
-      await sysClipboard.copyFilesTo(pathToTestFile);
+      await sysClipboard.writeFiles(pathToTestFile);
     }
-    await sysClipboard.pasteFilesFrom('Cut', destinationFolder, pathToTestFile);
+    await sysClipboard.pasteFiles('Cut', destinationFolder, pathToTestFile);
 
     const isExistTemp = fs.existsSync(pathToTestFile);
     const isExistDestination = fs.existsSync(pathToCopiedFile);

@@ -4,7 +4,7 @@ import pathLib from 'path';
 import { SysClipboard } from '../..';
 
 export default class WindowsClipboard implements SysClipboard {
-  async readTextFrom(): Promise<string> {
+  async readText(): Promise<string> {
     const { stdout, stderr } = await execa(
       `powershell -Command Add-Type -AssemblyName System.Windows.Forms; "if([Windows.Forms.Clipboard]::ContainsText()) {$clip=[Windows.Forms.Clipboard]::GetText(); if ($clip -ne $null) {return $clip }} "`,
       {
@@ -18,7 +18,7 @@ export default class WindowsClipboard implements SysClipboard {
     return stdout;
   }
 
-  async writeTextTo(text: string): Promise<void> {
+  async writeText(text: string): Promise<void> {
     const { stderr } = await execa('powershell -noprofile -command $input|Set-Clipboard', { input: text });
 
     if (stderr) {
@@ -26,7 +26,7 @@ export default class WindowsClipboard implements SysClipboard {
     }
   }
 
-  async readImageFrom(file?: string): Promise<Buffer> {
+  async readImage(file?: string): Promise<Buffer> {
     const { stdout, stderr } = await execa(
       `powershell -Command Add-Type -AssemblyName System.Windows.Forms; "$clip=[Windows.Forms.Clipboard]::GetImage();if ($clip -ne $null) { $converter = New-Object -TypeName System.Drawing.ImageConverter;$byte_vec = $converter.ConvertTo($clip, [byte[]]); $EncodedText =[Convert]::ToBase64String($byte_vec); return $EncodedText }"`,
     );
@@ -45,7 +45,7 @@ export default class WindowsClipboard implements SysClipboard {
     }
   }
 
-  async writeImageTo(file: string | Buffer): Promise<void> {
+  async writeImage(file: string | Buffer): Promise<void> {
     let path = '';
 
     if (typeof file !== 'string') {
@@ -74,7 +74,7 @@ export default class WindowsClipboard implements SysClipboard {
     }
   }
 
-  async readFilesFrom() {
+  async readFiles() {
     const { stdout, stderr } = await execa(
       `powershell -Command Add-Type -AssemblyName System.Windows.Forms; "if ([Windows.Forms.Clipboard]::ContainsFileDropList()) {$files = [Windows.Forms.Clipboard]::GetFileDropList(); return $files"}`,
       {
@@ -96,9 +96,9 @@ export default class WindowsClipboard implements SysClipboard {
     }
   }
 
-  async pasteFilesFrom(action: 'Copy' | 'Cut', destinationFolder: string, ...files: Array<string>): Promise<void> {
+  async pasteFiles(action: 'Copy' | 'Cut', destinationFolder: string, ...files: Array<string>): Promise<void> {
     if(files && files.length){
-      await this.copyFilesTo(...files);
+      await this.writeFiles(...files);
     }
     const { stderr } = await execa(
       `powershell -Command Add-Type -AssemblyName System.Windows.Forms; "$fileDrop = get-clipboard -Format FileDropList; if($fileDrop -eq $null) { write-host 'No files on the clipboard'; return } foreach($file in $fileDrop) {if (Test-Path $file) {if($file.Mode.StartsWith('d')) { $source = join-path $file.Directory $file.Name; Invoke-Expression '${
@@ -114,7 +114,7 @@ export default class WindowsClipboard implements SysClipboard {
     }
   }
 
-  async copyFilesTo(...files: Array<string>): Promise<boolean> {
+  async writeFiles(...files: Array<string>): Promise<boolean> {
     const formattedFiles: Array<string> = [];
 
     files.forEach((f) => {

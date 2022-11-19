@@ -4,19 +4,19 @@ import pathLib from 'path';
 import { SysClipboard } from '../..';
 
 export default class DarwinClipboard implements SysClipboard {
-  readFilesFrom(): Promise<Array<string>> {
+  readFiles(): Promise<Array<string>> {
     throw new Error('Method not implemented.');
   }
 
-  pasteFilesFrom(action: 'Copy' | 'Cut', destinationFolder: string, ...files: Array<string>): Promise<void> {
+  pasteFiles(action: 'Copy' | 'Cut', destinationFolder: string, ...files: Array<string>): Promise<void> {
     throw new Error('Method not implemented.');
   }
 
-  copyFilesTo(...files: string[]): Promise<boolean> {
+  writeFiles(...files: string[]): Promise<boolean> {
     throw new Error('Method not implemented.');
   }
 
-  async readTextFrom(): Promise<string> {
+  async readText(): Promise<string> {
     const { stdout, stderr } = await execa('pbpaste', {
       stripFinalNewline: false,
     });
@@ -27,7 +27,7 @@ export default class DarwinClipboard implements SysClipboard {
     return stdout;
   }
 
-  async writeTextTo(text: string): Promise<void> {
+  async writeText(text: string): Promise<void> {
     const { stderr } = await execa('pbcopy', {
       input: text,
       env: {
@@ -40,7 +40,7 @@ export default class DarwinClipboard implements SysClipboard {
     }
   }
 
-  async readImageFrom(file?: string): Promise<Buffer> {
+  async readImage(file?: string): Promise<Buffer> {
     const path = file ? file : `${pathLib.join(process.cwd(), 'temp.png')}`;
     await fs.writeFile(path, Buffer.from([]));
 
@@ -64,7 +64,7 @@ export default class DarwinClipboard implements SysClipboard {
     }
   }
 
-  async writeImageTo(file: string | Buffer): Promise<void> {
+  async writeImage(file: string | Buffer): Promise<void> {
     const path = typeof file === 'string' ? file : await fs.writeFile(pathLib.join(process.cwd(), 'temp.png'), file);
 
     const { stderr } = execa(`osascript -e set the clipboard to (read "${path}" as TIFF picture)`);

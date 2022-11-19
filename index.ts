@@ -3,13 +3,13 @@ import LinuxClipboard from './src/platform/linux';
 import WindowsClipboard from './src/platform/windows';
 
 export interface SysClipboard {
-  readTextFrom(): Promise<string>;
-  writeTextTo: (text: string) => Promise<void>;
-  readImageFrom(file?: string): Promise<Buffer>;
-  writeImageTo(file: string | Buffer): Promise<void>;
-  readFilesFrom(): Promise<Array<string>>;
-  pasteFilesFrom(action: 'Copy' | 'Cut', destinationFolder: string, ...files: Array<string>): Promise<void>;
-  copyFilesTo(...files: Array<string>): Promise<boolean>;
+  readText(): Promise<string>;
+  writeText: (text: string) => Promise<void>;
+  readImage(file?: string): Promise<Buffer>;
+  writeImage(file: string | Buffer): Promise<void>;
+  readFiles(): Promise<Array<string>>;
+  pasteFiles(action: 'Copy' | 'Cut', destinationFolder: string, ...files: Array<string>): Promise<void>;
+  writeFiles(...files: Array<string>): Promise<boolean>;
 }
 
 export const sysClipboard: SysClipboard = (() => {
