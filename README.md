@@ -6,8 +6,8 @@ Cross-platform!
 
 Supports:
 
-- Windows(text, images, files)
-- Linux (text,images,files) *should be installed xclip (`sudo apt install xclip`))*
+- Windows (text, images, files)
+- Linux (text,images,files) *should be installed xclip (`sudo apt install xclip`)*
 - MacOS (text, images),
 
 ## Install
