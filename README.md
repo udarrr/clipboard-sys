@@ -41,10 +41,6 @@ async function copyPasteFiles() {
   await sysClipboard.pasteFiles('Cut', './', './source1.png', './source2.png');
 }
 copyPasteFiles();
-
-//For windows 
-  await sysClipboard.writeFiles('./source.png', './some.png'); // only windows
-  console.log(await sysClipboard.readFiles()); // only windows
 ```
 
 ## API
