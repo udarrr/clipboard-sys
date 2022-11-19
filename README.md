@@ -47,7 +47,7 @@ copyPasteFiles();
 ```typescript
 export interface SysClipboard {
   readText(): Promise<string>;
-  writeText: (text: string) => Promise<void>;
+  writeText(text: string): Promise<void>;
   readImage(file?: string): Promise<Buffer>;
   writeImage(file: string | Buffer): Promise<void>;
   readFiles(): Promise<Array<string>>;
