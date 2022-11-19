@@ -8,7 +8,7 @@ export default class DarwinClipboard implements SysClipboard {
     throw new Error('Method not implemented.');
   }
 
-  pasteFilesFrom(action: 'Copy' | 'Cut', destinationFolder: string): Promise<void> {
+  pasteFilesFrom(action: 'Copy' | 'Cut', destinationFolder: string, ...files: Array<string>): Promise<void> {
     throw new Error('Method not implemented.');
   }
 

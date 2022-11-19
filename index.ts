@@ -8,7 +8,7 @@ export interface SysClipboard {
   readImageFrom(file?: string): Promise<Buffer>;
   writeImageTo(file: string | Buffer): Promise<void>;
   readFilesFrom(): Promise<Array<string>>;
-  pasteFilesFrom(action: 'Copy' | 'Cut', destinationFolder: string): Promise<void>;
+  pasteFilesFrom(action: 'Copy' | 'Cut', destinationFolder: string, ...files: Array<string>): Promise<void>;
   copyFilesTo(...files: Array<string>): Promise<boolean>;
 }
 

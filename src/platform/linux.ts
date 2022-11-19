@@ -8,8 +8,22 @@ export default class LinuxClipboard implements SysClipboard {
     throw new Error('Method not implemented.');
   }
 
-  pasteFilesFrom(action: 'Copy' | 'Cut', destinationFolder: string): Promise<void> {
-    throw new Error('Method not implemented.');
+  async pasteFilesFrom(action: 'Copy' | 'Cut', destinationFolder: string, ...files: Array<string>): Promise<void> {
+    if(action === 'Copy'){
+      await execa(`xclip-copyfile ${files.join(' ')}`, {
+        stdio: 'inherit',
+        shell: true,
+      });
+    } else {
+      await execa(`xclip-cutfile ${files.join(' ')}`, {
+        stdio: 'inherit',
+        shell: true,
+      });
+    }
+    await execa(`xclip-pastefile`, {
+      shell: true,
+      cwd: destinationFolder
+    });
   }
 
   copyFilesTo(...files: string[]): Promise<boolean> {
@@ -17,7 +31,7 @@ export default class LinuxClipboard implements SysClipboard {
   }
 
   async readTextFrom(): Promise<string> {
-    const { stdout, stderr } = await execa('xclip  -selection clipboard -o | base64', {
+    const { stdout, stderr } = await execa('xclip  -selection clipboard -o', {
       shell: true,
       stripFinalNewline: false,
     });
@@ -25,17 +39,20 @@ export default class LinuxClipboard implements SysClipboard {
     if (stderr) {
       throw new Error(`cannot read text from clipboard error: ${stderr}`);
     }
-    return Buffer.from(stdout, 'base64').toString();
+    return stdout;
   }
 
   async writeTextTo(text: string): Promise<void> {
     try {
-      await execa(`echo -n '${text} | xclip -r -selection clipboard`, {
+      await execa.sync(`echo -n '${text}' | xclip -r -selection clipboard`, {
         stdin: 'inherit',
         shell: true,
+        timeout: 1500,
       });
     } catch (error: any) {
-      throw new Error(`cannot write text due to clipboard error: ${error.message}`);
+      if(error.code !== 'ETIMEDOUT'){
+        throw new Error(`cannot write text due to clipboard error: ${error.message}`);
+      }
     }
   }
 
@@ -58,20 +75,13 @@ export default class LinuxClipboard implements SysClipboard {
   }
 
   async writeImageTo(file: string | Buffer): Promise<void> {
-    const { stdout, stderr } = execa(`file -b --mime-type ${file}`, {
-      shell: true,
-    });
-
-    if (stderr) {
-      throw new Error(`cannot read file by path ${file}`);
-    }
-    let path = '';
+    let path = ''
 
     if (typeof file !== 'string') {
       const pathToTemp = pathLib.join(process.cwd(), 'temp.png');
       await fs.writeFile(pathToTemp, file);
 
-      if (await fs.existsSync(pathToTemp)) {
+      if (fs.existsSync(pathToTemp)) {
         path = pathToTemp;
       } else {
         throw new Error("Temp file wasn't created");
@@ -80,20 +90,24 @@ export default class LinuxClipboard implements SysClipboard {
       path = file;
     }
 
+    const { stdout, stderr } = await execa(`file -b --mime-type '${path}'`, {
+      shell: true,
+    });
+
+    if (stderr) {
+      throw new Error(`cannot read file by path ${file}`);
+    };
+
     try {
       await execa(`xclip -selection clipboard -t ${stdout} -i ${path}`, {
         stdio: 'inherit',
         shell: true,
       });
     } catch (error: any) {
-      try {
-        if (fs.existsSync(path)) {
-          await fs.unlink(path);
-        }
-      } catch {}
-
       throw new Error(`cannot write image to clipboard error: ${error.message}`);
-    } finally {
+    } 
+
+    if(typeof file !== 'string'){
       try {
         if (fs.existsSync(path)) {
           await fs.unlink(path);

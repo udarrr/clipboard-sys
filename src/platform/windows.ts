@@ -96,7 +96,10 @@ export default class WindowsClipboard implements SysClipboard {
     }
   }
 
-  async pasteFilesFrom(action: 'Copy' | 'Cut', destinationFolder: string): Promise<void> {
+  async pasteFilesFrom(action: 'Copy' | 'Cut', destinationFolder: string, ...files: Array<string>): Promise<void> {
+    if(files && files.length){
+      await this.copyFilesTo(...files);
+    }
     const { stderr } = await execa(
       `powershell -Command Add-Type -AssemblyName System.Windows.Forms; "$fileDrop = get-clipboard -Format FileDropList; if($fileDrop -eq $null) { write-host 'No files on the clipboard'; return } foreach($file in $fileDrop) {if (Test-Path $file) {if($file.Mode.StartsWith('d')) { $source = join-path $file.Directory $file.Name; Invoke-Expression '${
         action === 'Copy' ? 'copy' : 'move'
