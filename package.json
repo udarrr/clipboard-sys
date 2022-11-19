@@ -1,12 +1,14 @@
 {
   "name": "sys-clipboard",
-  "version": "0.8.2",
+  "version": "0.8.6",
   "description": "Cross platform node system clipboard work with text, image, files",
-  "main": "index.js",
+  "main": "dist/index",
+  "typings": "dist/index",
   "repository": {
     "type": "git",
     "url": "https://github.com/udarrr/sys-clipboard"
   },
+  "files": ["dist"],
   "keywords": [
     "clipboard",
     "copy",
@@ -30,7 +32,7 @@
   ],
   "author": {
     "name": "Siarhei Kliushnikau",
-    "email": "https://github.com/udarrr",
+    "email": "sergey.klyshniko2@gmail.com",
     "url": "https://github.com/udarrr"
   },
   "license": "MIT",
@@ -38,6 +40,8 @@
   "scripts": {
     "clean": "rimraf dist",
     "build": "npm run clean && tsc -p .",
+    "pretest": "npm pack",
+    "prepublishOnly": "npm run build",
     "test": "npm run build && mocha ./dist/tests/specs.js --no-timeout || exit 0",
     "publish": "npm publish --tag latest --access=public"
   },

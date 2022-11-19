@@ -19,7 +19,7 @@ npm install sys-clipboard
 ## Usage
 
 ```typescript
-import sysClipboard from 'sysClipboard';
+import { sysClipboard } from 'sys-clipboard';
 
 async function readWriteText() {
   await sysClipboard.writeText('some text');
