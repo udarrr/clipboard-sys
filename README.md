@@ -1,4 +1,4 @@
-# sys-clipboard
+# clipboard-sys
 
 > Access the system clipboard (copy/paste text, images, files)
 
@@ -13,32 +13,33 @@ Supports:
 ## Install
 
 ```
-npm install sys-clipboard
+npm install clipboard-sys
 ```
 
 ## Usage
 
 ```typescript
-import { sysClipboard } from 'sys-clipboard';
+import { clipboard } from 'clipboard-sys';
+import fs from 'fs'
 
 async function readWriteText() {
-  await sysClipboard.writeText('some text');
-  console.log('text from clipboard:', await sysClipboard.readText());
+  await clipboard.writeText('some text');
+  console.log('text from clipboard:', await clipboard.readText());
 }
 readWriteText();
 
 async function readWriteImage() {
-  await sysClipboard.writeImage('./source.png');
-  await sysClipboard.writeImage(fs.readFileSync('./source.png')); //buffer
+  await clipboard.writeImage('./source.png');
+  await clipboard.readImage('./destination.png');
 
-  await sysClipboard.readImage('./destination.png');
-  await sysClipboard.readImage(); //buffer
+  await clipboard.writeImage(fs.readFileSync('./source.png')); //buffer
+  return await clipboard.readImage(); //buffer
 }
 readWriteImage();
 
 async function copyPasteFiles() {
-  await sysClipboard.pasteFiles('Copy', './', './source1.png', './source2.png');
-  await sysClipboard.pasteFiles('Cut', './', './source1.png', './source2.png');
+  await clipboard.pasteFiles('Copy', './', './source1.png', './source2.png');
+  await clipboard.pasteFiles('Cut', './', './source1.png', './source2.png');
 }
 copyPasteFiles();
 ```

@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { sysClipboard } from '../index';
+import { clipboard } from '../index';
 import path from 'path';
 import sizeOf from 'buffer-image-size';
 import sizeOfImage from 'image-size';
@@ -19,8 +19,8 @@ describe('Read text from clipboard', () => {
   after(async () => {});
 
   it('Write read text clipboard', async () => {
-    await sysClipboard.writeText(testText);
-    const text = await sysClipboard.readText();
+    await clipboard.writeText(testText);
+    const text = await clipboard.readText();
 
     expect(text).to.be.equal(testText);
   });
@@ -30,8 +30,8 @@ describe('Read text from clipboard', () => {
     const pathToReadPic = path.join(process.cwd(), 'tests', 'data', 'readPic.png');
     const sizeTestPic = sizeOfImage(pathToTestPic);
 
-    await sysClipboard.writeImage(pathToTestPic);
-    await sysClipboard.readImage(pathToReadPic);
+    await clipboard.writeImage(pathToTestPic);
+    await clipboard.readImage(pathToReadPic);
 
     const sizeReadPic = sizeOfImage(pathToReadPic);
 
@@ -51,8 +51,8 @@ describe('Read text from clipboard', () => {
     const bufferTempPic = await fs.readFile(pathToTestPic);
     const sizeTestPic = sizeOf(bufferTempPic);
 
-    await sysClipboard.writeImage(bufferTempPic);
-    const bufferReadPic = await sysClipboard.readImage();
+    await clipboard.writeImage(bufferTempPic);
+    const bufferReadPic = await clipboard.readImage();
 
     const sizeReadPic = sizeOf(bufferReadPic);
 
@@ -69,8 +69,8 @@ describe('Read text from clipboard', () => {
     it('Read files clipboard', async () => {
       const pathToTestFile = path.join(process.cwd(), 'tests', 'data', 'from', 'testFile.txt');
   
-      await sysClipboard.writeFiles(pathToTestFile, pathToTestFile, pathToTestFile);
-      const files = await sysClipboard.readFiles();
+      await clipboard.writeFiles(pathToTestFile, pathToTestFile, pathToTestFile);
+      const files = await clipboard.readFiles();
   
       expect(files.every((f) => fs.existsSync(f))).to.be.equal(true);
     });
@@ -83,9 +83,9 @@ describe('Read text from clipboard', () => {
     const pathToCopiedFile = path.join(destinationFolder, 'testFile.txt');
 
     if(process.platform === 'win32'){
-      await sysClipboard.writeFiles(pathToTestFile);
+      await clipboard.writeFiles(pathToTestFile);
     }
-    await sysClipboard.pasteFiles('Copy', destinationFolder, pathToTestFile);
+    await clipboard.pasteFiles('Copy', destinationFolder, pathToTestFile);
     const isExist = fs.existsSync(pathToCopiedFile);
 
     try {
@@ -103,9 +103,9 @@ describe('Read text from clipboard', () => {
     const pathToCopiedFile = path.join(destinationFolder, 'testFile.txt');
 
     if(process.platform === 'win32'){
-      await sysClipboard.writeFiles(pathToTestFile);
+      await clipboard.writeFiles(pathToTestFile);
     }
-    await sysClipboard.pasteFiles('Cut', destinationFolder, pathToTestFile);
+    await clipboard.pasteFiles('Cut', destinationFolder, pathToTestFile);
 
     const isExistTemp = fs.existsSync(pathToTestFile);
     const isExistDestination = fs.existsSync(pathToCopiedFile);
