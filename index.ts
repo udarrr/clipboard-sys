@@ -12,7 +12,7 @@ export interface SysClipboard {
   writeFiles(...files: Array<string>): Promise<boolean>;
 }
 
-export const sysClipboard: SysClipboard = (() => {
+export const clipboard: SysClipboard = (() => {
   switch (process.platform) {
     case 'darwin':
       return new DarwinClipboard();
