@@ -59,4 +59,4 @@ export interface SysClipboard {
 
 #### Contribution
 
-Opened for contribution https://github.com/udarrr/sys-clipboard
+Opened for contribution https://github.com/udarrr/clipboard-sys
