@@ -1,14 +1,18 @@
 # clipboard-sys
 
-> Access the system clipboard (copy/paste text, images, files)
+> Access the system clipboard
+
+- copy/paste text
+- copy/paste image
+- copy/paste files
 
 Cross-platform!
 
 Supports:
 
-- Windows (text, images, files)
-- Linux (text,images,files) *should be installed xclip (`sudo apt install xclip`)*
-- MacOS (text, images),
+- Windows
+- Linux (xclip supporting systems) *should be installed xclip (`sudo apt install xclip`)*
+- MacOS
 
 ## Install
 
@@ -19,8 +23,8 @@ npm install clipboard-sys
 ## Usage
 
 ```typescript
-import { clipboard } from 'clipboard-sys';
-import fs from 'fs'
+import { clipboard } from './index';
+import fs from 'fs';
 
 async function readWriteText() {
   await clipboard.writeText('some text');
@@ -37,14 +41,21 @@ async function readWriteImage() {
 }
 readWriteImage();
 
-async function copyPasteFiles() {
-  await clipboard.pasteFiles('Copy', './', './source1.png', './source2.png');
-  await clipboard.pasteFiles('Cut', './', './source1.png', './source2.png');
+async function copyFiles() {
+  await clipboard.writeFiles('./source1.txt', './source2.png');
+  console.log(await clipboard.readFiles());
 }
-copyPasteFiles();
+copyFiles();
+
+async function pasteFiles() {
+  await clipboard.pasteFiles('Copy', './destinationFolder', './source1.png', './source2.png');
+  await clipboard.pasteFiles('Cut', './destinationFolder', './source1.png', './source2.png');
+}
+pasteFiles();
 ```
 
 ## API
+
 ```typescript
 export interface SysClipboard {
   readText(): Promise<string>;
@@ -59,4 +70,4 @@ export interface SysClipboard {
 
 #### Contribution
 
-Opened for contribution https://github.com/udarrr/clipboard-sys
+Opened for contribution <https://github.com/udarrr/clipboard-sys>
