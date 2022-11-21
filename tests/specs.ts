@@ -9,14 +9,14 @@ describe('Read text from clipboard', () => {
   const testText = 'test text';
 
   before(async () => {
-    const pathToTestFile = path.join(process.cwd(), 'tests', 'data', 'from', 'testFile.txt');
+    const pathToTestFile = path.join(process.cwd(), 'tests', 'data', 'from', 'testFileFrom.txt');
 
     if (!fs.existsSync(pathToTestFile)) {
       await fs.writeFile(pathToTestFile, Buffer.from('test'));
     }
   });
 
-  after(async () => {});
+  after(async () => { });
 
   it('Write read text clipboard', async () => {
     await clipboard.writeText(testText);
@@ -39,7 +39,7 @@ describe('Read text from clipboard', () => {
       if (fs.existsSync(pathToReadPic)) {
         await fs.unlink(pathToReadPic);
       }
-    } catch {}
+    } catch { }
 
     expect(JSON.stringify(sizeTestPic)).to.be.equal(JSON.stringify(sizeReadPic));
   });
@@ -60,29 +60,27 @@ describe('Read text from clipboard', () => {
       if (fs.existsSync(pathToReadPic)) {
         await fs.unlink(pathToReadPic);
       }
-    } catch {}
+    } catch { }
 
     expect(JSON.stringify(sizeTestPic)).to.be.equal(JSON.stringify(sizeReadPic));
   });
 
-  if(process.platform === 'win32') {
-    it('Read files clipboard', async () => {
-      const pathToTestFile = path.join(process.cwd(), 'tests', 'data', 'from', 'testFile.txt');
-  
-      await clipboard.writeFiles(pathToTestFile, pathToTestFile, pathToTestFile);
-      const files = await clipboard.readFiles();
-  
-      expect(files.every((f) => fs.existsSync(f))).to.be.equal(true);
-    });
-  }
+  it('Read files clipboard', async () => {
+    const pathToTestFile = path.join(process.cwd(), 'tests', 'data', 'from', 'testFileFrom.txt');
+
+    await clipboard.writeFiles(pathToTestFile, pathToTestFile, pathToTestFile);
+    const files = await clipboard.readFiles();
+
+    expect(files.every((f) => fs.existsSync(f))).to.be.equal(true);
+  });
 
 
   it('Copy paste files clipboard', async () => {
-    const pathToTestFile = path.join(process.cwd(), 'tests', 'data', 'from', 'testFile.txt');
+    const pathToTestFile = path.join(process.cwd(), 'tests', 'data', 'from', 'testFileFrom.txt');
     const destinationFolder = path.join(process.cwd(), 'tests', 'data', 'to');
-    const pathToCopiedFile = path.join(destinationFolder, 'testFile.txt');
+    const pathToCopiedFile = path.join(destinationFolder, 'testFileFrom.txt');
 
-    if(process.platform === 'win32'){
+    if (process.platform === 'win32') {
       await clipboard.writeFiles(pathToTestFile);
     }
     await clipboard.pasteFiles('Copy', destinationFolder, pathToTestFile);
@@ -92,17 +90,17 @@ describe('Read text from clipboard', () => {
       if (fs.existsSync(pathToCopiedFile)) {
         await fs.unlink(pathToCopiedFile);
       }
-    } catch {}
+    } catch { }
 
     expect(isExist).to.be.equal(true);
   });
 
   it('Cut paste files clipboard', async () => {
-    const pathToTestFile = path.join(process.cwd(), 'tests', 'data', 'from', 'testFile.txt');
+    const pathToTestFile = path.join(process.cwd(), 'tests', 'data', 'from', 'testFileFrom.txt');
     const destinationFolder = path.join(process.cwd(), 'tests', 'data', 'to');
-    const pathToCopiedFile = path.join(destinationFolder, 'testFile.txt');
+    const pathToCopiedFile = path.join(destinationFolder, 'testFileFrom.txt');
 
-    if(process.platform === 'win32'){
+    if (process.platform === 'win32') {
       await clipboard.writeFiles(pathToTestFile);
     }
     await clipboard.pasteFiles('Cut', destinationFolder, pathToTestFile);
@@ -114,7 +112,7 @@ describe('Read text from clipboard', () => {
       if (fs.existsSync(pathToCopiedFile)) {
         await fs.unlink(pathToCopiedFile);
       }
-    } catch {}
+    } catch { }
 
     if (!isExistTemp) {
       await fs.writeFile(pathToTestFile, Buffer.from('test'));

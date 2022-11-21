@@ -4,12 +4,20 @@ import pathLib from 'path';
 import { SysClipboard } from '../..';
 
 export default class LinuxClipboard implements SysClipboard {
-  readFiles(): Promise<Array<string>> {
-    throw new Error('Method not implemented.');
+  async readFiles(): Promise<Array<string>> {
+    const files = await this.readText();
+
+    if (files) {
+      const isPathExist = files.split(' ').every(f => {
+        return fs.existsSync(f)
+      })
+      return isPathExist ? files.split(' ') : [];
+    }
+    return [];
   }
 
   async pasteFiles(action: 'Copy' | 'Cut', destinationFolder: string, ...files: Array<string>): Promise<void> {
-    if(action === 'Copy'){
+    if (action === 'Copy') {
       await execa(`xclip-copyfile ${files.join(' ')}`, {
         stdio: 'inherit',
         shell: true,
@@ -26,8 +34,36 @@ export default class LinuxClipboard implements SysClipboard {
     });
   }
 
-  writeFiles(...files: string[]): Promise<boolean> {
-    throw new Error('Method not implemented.');
+  async writeFiles(...files: string[]): Promise<boolean> {
+    const isPathExist = files.every(f => {
+      return fs.existsSync(f)
+    })
+    if (!isPathExist) {
+      throw new Error(`No such paths ${files.join(' ')}`)
+    };
+
+    const dirNames = files.map(f => {
+      return pathLib.dirname(f)
+    });
+    const formattedDir = dirNames.join(' ');
+    const formattedBase = files.map(f => {
+      const base = pathLib.basename(f);
+
+      return `-o -name "${base}"`
+    })
+    if (formattedBase.length) {
+      formattedBase[0] = formattedBase[0].replace('-o', '');
+    }
+
+    try {
+      await execa(`find ${formattedDir} ${formattedBase.join(' ')} | xclip -i -selection clipboard -t text/uri-list`, {
+        stdio: 'inherit',
+        shell: true,
+      });
+      return true;
+    } catch (error: any) {
+      throw new Error(`cannot write text due to clipboard error: ${error.message}`);
+    }
   }
 
   async readText(): Promise<string> {
@@ -44,15 +80,12 @@ export default class LinuxClipboard implements SysClipboard {
 
   async writeText(text: string): Promise<void> {
     try {
-      await execa.sync(`echo -n '${text}' | xclip -r -selection clipboard`, {
-        stdin: 'inherit',
+      await execa(`echo -n '${text}' | xclip -r -selection clipboard`, {
+        stdio: 'inherit',
         shell: true,
-        timeout: 1500,
       });
     } catch (error: any) {
-      if(error.code !== 'ETIMEDOUT'){
-        throw new Error(`cannot write text due to clipboard error: ${error.message}`);
-      }
+      throw new Error(`cannot write text due to clipboard error: ${error.message}`);
     }
   }
 
@@ -105,15 +138,14 @@ export default class LinuxClipboard implements SysClipboard {
       });
     } catch (error: any) {
       throw new Error(`cannot write image to clipboard error: ${error.message}`);
-    } 
+    }
 
-    if(typeof file !== 'string'){
+    if (typeof file !== 'string') {
       try {
         if (fs.existsSync(path)) {
           await fs.unlink(path);
         }
-      } catch {}
+      } catch { }
     }
   }
 }
-

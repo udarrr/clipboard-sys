@@ -56,11 +56,13 @@ export default class DarwinClipboard implements SysClipboard {
     } catch {
       return Buffer.from([]);
     } finally {
-      try {
-        if (fs.existsSync(path)) {
-          await fs.unlink(path);
-        }
-      } catch {}
+      if (!file) {
+        try {
+          if (fs.existsSync(path)) {
+            await fs.unlink(path);
+          }
+        } catch { }
+      }
     }
   }
 
