@@ -4,23 +4,47 @@ import pathLib from 'path';
 import { SysClipboard } from '../..';
 
 export default class DarwinClipboard implements SysClipboard {
-  readFiles(): Promise<Array<string>> {
-    throw new Error('Method not implemented.');
+  async readFiles(): Promise<Array<string>> {
+    const files = await this.readText();
+
+    if (files) {
+      const isPathExist = files.split(' ').every((f) => {
+        return fs.existsSync(f);
+      });
+      return isPathExist ? files.split(' ') : [];
+    }
+    return [];
   }
 
-  pasteFiles(action: 'Copy' | 'Cut', destinationFolder: string, ...files: Array<string>): Promise<void> {
-    throw new Error('Method not implemented.');
+  async pasteFiles(action: 'Copy', destinationFolder: string, ...files: Array<string>): Promise<void> {
+    await this.writeFiles(...files);
+
+    if (action === 'Copy') {
+      const { stderr } = await execa('pbpaste', {
+        stripFinalNewline: false,
+        cwd: destinationFolder,
+      });
+      if (stderr) {
+        throw new Error(`cannot read text error: ${stderr}`);
+      }
+    }
   }
 
-  writeFiles(...files: string[]): Promise<boolean> {
-    throw new Error('Method not implemented.');
+  async writeFiles(...files: string[]): Promise<boolean> {
+    const { stdout, stderr } = await execa(`osascript "${pathLib.join(__dirname, 'darwinScript', 'pbadd.applescript')}" "${files.join(' ')}"`, {
+      stripFinalNewline: false,
+    });
+
+    if (stderr) {
+      throw new Error(`cannot read text error: ${stderr}`);
+    }
+    return !!stdout;
   }
 
   async readText(): Promise<string> {
     const { stdout, stderr } = await execa('pbpaste', {
       stripFinalNewline: false,
     });
-
     if (!stdout) {
       throw new Error(`cannot read text error: ${stderr}`);
     }
@@ -34,7 +58,6 @@ export default class DarwinClipboard implements SysClipboard {
         LC_CTYPE: 'UTF-8',
       },
     });
-
     if (stderr) {
       throw new Error(`cannot write text due to clipboard error: ${stderr}`);
     }
@@ -43,7 +66,7 @@ export default class DarwinClipboard implements SysClipboard {
   async readImage(file?: string): Promise<Buffer> {
     const path = file ? file : `${pathLib.join(process.cwd(), 'temp.png')}`;
     await fs.writeFile(path, Buffer.from([]));
-
+    
     const { stderr } = await execa(`osascript -e write (the clipboard as «class PNGf») to (open for access "${path}" with write permission)`);
 
     if (stderr) {
@@ -61,18 +84,32 @@ export default class DarwinClipboard implements SysClipboard {
           if (fs.existsSync(path)) {
             await fs.unlink(path);
           }
-        } catch { }
+        } catch {}
       }
     }
   }
 
   async writeImage(file: string | Buffer): Promise<void> {
-    const path = typeof file === 'string' ? file : await fs.writeFile(pathLib.join(process.cwd(), 'temp.png'), file);
+    let path = '';
 
+    if (typeof file !== 'string') {
+      path = pathLib.join(process.cwd(), 'temp.png');
+      await fs.writeFile(pathLib.join(process.cwd(), 'temp.png'), file);
+    } else {
+      path = file;
+    }
     const { stderr } = execa(`osascript -e set the clipboard to (read "${path}" as TIFF picture)`);
 
     if (stderr) {
       throw new Error(`cannot write image to clipboard error: ${stderr}`);
+    }
+
+    if (typeof file !== 'string') {
+      try {
+        if (fs.existsSync(path)) {
+          await fs.unlink(path);
+        }
+      } catch {}
     }
   }
 }
