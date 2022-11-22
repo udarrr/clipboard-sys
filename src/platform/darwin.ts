@@ -31,10 +31,10 @@ export default class DarwinClipboard implements SysClipboard {
   }
 
   async writeFiles(...files: string[]): Promise<boolean> {
-    const { stderr } = await execa(`osascript ${pathLib.join(__dirname, 'darwinScript', 'pbadd.applescript')} `, files);
+    const { stderr } = await execa('osascript', ['-ss', pathLib.join(__dirname, 'darwinScript', 'pbadd.applescript'), ...files]);
 
     if (stderr) {
-      throw new Error(`cannot read text error: ${stderr}`);
+      throw new Error(`cannot read text error: ${JSON.stringify(stderr)}`);
     }
     return true;
   }
