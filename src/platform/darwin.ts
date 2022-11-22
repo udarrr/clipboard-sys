@@ -31,12 +31,12 @@ export default class DarwinClipboard implements SysClipboard {
   }
 
   async writeFiles(...files: string[]): Promise<boolean> {
-    const { stdout, stderr } = await execa(`osascript "${pathLib.join(__dirname, 'darwinScript', 'pbadd.applescript')}"`, files);
+    const { stderr } = await execa(`osascript ${pathLib.join(__dirname, 'darwinScript', 'pbadd.applescript')} `, files);
 
     if (stderr) {
       throw new Error(`cannot read text error: ${stderr}`);
     }
-    return !!stdout;
+    return true;
   }
 
   async readText(): Promise<string> {
@@ -65,7 +65,7 @@ export default class DarwinClipboard implements SysClipboard {
     const path = file ? file : `${pathLib.join(process.cwd(), 'temp.png')}`;
     await fs.writeFile(path, Buffer.from([]));
 
-    const { stderr } = await execa(`osascript -e write (the clipboard as «class PNGf») to (open for access "${path}" with write permission)`);
+    const { stderr } = await execa(`osascript -e set d to the clipboard as «class PNGf» set fid to open for access "${path}" with write permission write d to fid close access fid`);
 
     if (stderr) {
       throw new Error(`cannot read image from clipboard error: ${stderr}`);
