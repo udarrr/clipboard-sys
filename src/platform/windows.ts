@@ -132,6 +132,6 @@ export default class WindowsClipboard implements SysClipboard {
     if (stderr) {
       throw new Error(`cannot read files from clipboard error: ${stderr}`);
     }
-    return +Buffer.from(stdout, 'base64').toString() === 0;
+    return +stdout === 0;
   }
 }
