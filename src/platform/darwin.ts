@@ -5,38 +5,15 @@ import { SysClipboard } from '../..';
 
 export default class DarwinClipboard implements SysClipboard {
   async readFiles(): Promise<Array<string>> {
-    const files = await this.readText();
-
-    if (files) {
-      const isPathExist = files.split(' ').every((f) => {
-        return fs.existsSync(f);
-      });
-      return isPathExist ? files.split(' ') : [];
-    }
-    return [];
+    throw new Error('Not implemented yet');
   }
 
   async pasteFiles(action: 'Copy', destinationFolder: string, ...files: Array<string>): Promise<void> {
-    await this.writeFiles(...files);
-
-    if (action === 'Copy') {
-      const { stderr } = await execa('pbpaste', {
-        stripFinalNewline: false,
-        cwd: destinationFolder,
-      });
-      if (stderr) {
-        throw new Error(`cannot read text error: ${stderr}`);
-      }
-    }
+    throw new Error('Not implemented yet');
   }
 
   async writeFiles(...files: string[]): Promise<boolean> {
-    const { stderr } = await execa('osascript', ['-ss', pathLib.join(__dirname, 'darwinScript', 'pbadd.applescript'), ...files]);
-
-    if (stderr) {
-      throw new Error(`cannot read text error: ${JSON.stringify(stderr)}`);
-    }
-    return true;
+    throw new Error('Not implemented yet');
   }
 
   async readText(): Promise<string> {
@@ -62,27 +39,33 @@ export default class DarwinClipboard implements SysClipboard {
   }
 
   async readImage(file?: string): Promise<Buffer> {
-    const path = file ? file : `${pathLib.join(process.cwd(), 'temp.png')}`;
-    await fs.writeFile(path, Buffer.from([]));
+    let path = '';
 
-    const { stderr } = await execa(`osascript -e set d to the clipboard as «class PNGf» set fid to open for access "${path}" with write permission write d to fid close access fid`);
-
-    if (stderr) {
-      throw new Error(`cannot read image from clipboard error: ${stderr}`);
-    }
     try {
+      if (typeof file !== 'string') {
+        path = pathLib.join(process.cwd(), 'temp.png');
+        await fs.writeFile(path, Buffer.from([]));
+      } else {
+        path = file;
+      }
+      const { stderr } = await execa(`osascript`, ['-ss', pathLib.join(__dirname, 'darwinScript', 'read_image.applescript'), path]);
+
+      if (stderr) {
+        throw new Error(`cannot read image from clipboard error: ${stderr}`);
+      }
+
       const bufferFile = await fs.readFile(path);
 
       return bufferFile;
-    } catch {
-      return Buffer.from([]);
+    } catch (error: any) {
+      throw new Error(error)
     } finally {
       if (!file) {
         try {
           if (fs.existsSync(path)) {
             await fs.unlink(path);
           }
-        } catch {}
+        } catch { }
       }
     }
   }
@@ -90,24 +73,28 @@ export default class DarwinClipboard implements SysClipboard {
   async writeImage(file: string | Buffer): Promise<void> {
     let path = '';
 
-    if (typeof file !== 'string') {
-      path = pathLib.join(process.cwd(), 'temp.png');
-      await fs.writeFile(pathLib.join(process.cwd(), 'temp.png'), file);
-    } else {
-      path = file;
-    }
-    const { stderr } = execa(`osascript -e 'set the clipboard to (read (POSIX file "${path}") as PNGf picture)'`);
+    try {
+      if (typeof file !== 'string') {
+        path = pathLib.join(process.cwd(), 'temp.png');
+        await fs.writeFile(path, file);
+      } else {
+        path = file;
+      }
+      const { stderr } = await execa(`osascript`, ['-ss', pathLib.join(__dirname, 'darwinScript', 'write_image.applescript'), path]);
 
-    if (stderr) {
-      throw new Error(`cannot write image to clipboard error: ${JSON.stringify(stderr)}`);
-    }
-
-    if (typeof file !== 'string') {
-      try {
-        if (fs.existsSync(path)) {
-          await fs.unlink(path);
-        }
-      } catch {}
+      if (stderr) {
+        throw new Error(`cannot write image to clipboard error: ${JSON.stringify(stderr)}`);
+      }
+    } catch (error: any) {
+      throw new Error(error);
+    } finally {
+      if (typeof file !== 'string') {
+        try {
+          if (fs.existsSync(path)) {
+            await fs.unlink(path);
+          }
+        } catch { }
+      }
     }
   }
 }

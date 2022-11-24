@@ -1,6 +1,6 @@
 {
   "name": "clipboard-sys",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "description": "Cross platform node system clipboard work with text, image, files",
   "main": "dist/index",
   "types": "dist",
@@ -49,7 +49,8 @@
     "build": "npm run clean && tsc -p .",
     "pretest": "npm pack",
     "prepublishOnly": "npm run build",
-    "test": "npm run build && mocha ./dist/tests/specs.js --no-timeout || exit 0",
+    "copy-files": "copyfiles -f ./src/platform/darwinScript/*.applescript ./dist/src/platform/darwinScript/",
+    "test": "npm run build && npm run copy-files && mocha ./dist/tests/specs.js --no-timeout || exit 0",
     "publish": "npm publish --tag latest --access=public"
   },
   "devDependencies": {
@@ -68,6 +69,7 @@
     "typescript": "^4.6.3"
   },
   "dependencies": {
+    "copyfiles": "^2.4.1",
     "execa": "5.1.1",
     "fs-extra": "^10.1.0"
   }
