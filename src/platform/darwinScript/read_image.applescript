@@ -1,5 +1,5 @@
 on run argv
-      set d to the clipboard as Çclass PNGfÈ 
+      set d to the clipboard as Â«class PNGfÂ»
       set fid to open for access ((item 1 of argv) as string) with write permission 
       write d to fid 
       close access fid
