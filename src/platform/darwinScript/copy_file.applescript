@@ -12,7 +12,7 @@ property NSURL : a reference to NSURL of this
 property pb : missing value
 
 on run input
-    if input's class = script then set input to Â
+    if input's class = script then set input to Â¬
         Finder's selection as alias list
 
     init()
@@ -38,9 +38,9 @@ to addToClipboard(fs)
 
     repeat with f in fs
         if f's class = alias then set f to f's POSIX path
-        set fp to (NSString's stringWithString:f)'s Â
+        set fp to (NSString's stringWithString:f)'s Â¬
             stringByStandardizingPath()
-        if (FileManager's fileExistsAtPath:fp) then Â
+        if (FileManager's fileExistsAtPath:fp) then Â¬
             (fURLs's addObject:(NSURL's fileURLWithPath:fp))
     end repeat
 
