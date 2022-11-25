@@ -1,8 +1,9 @@
 import execa = require('execa');
 import fs from 'fs-extra';
 import pathLib from 'path';
+import { FilesActionEnum, FilesActionType, SysClipboard } from '../..';
 
-export default class DarwinClipboard {
+export default class DarwinClipboard implements SysClipboard {
   async readFiles(): Promise<any> {
     const { stdout, stderr } = await execa(`osascript`, ['-ss', pathLib.join(__dirname, 'darwinScript', 'read_file.applescript')], { shell: true });
 
@@ -12,25 +13,25 @@ export default class DarwinClipboard {
     const files = stdout.split('\n');
 
     if (files.length) {
-      const withoutQuotes = files.map(f => f.replace('"', ''))
-      const isPathExist = withoutQuotes.every(f => {
-        return fs.existsSync(f)
+      const withoutQuotes = files.map((f) => f.replace('"', ''));
+      const isPathExist = withoutQuotes.every((f) => {
+        return fs.existsSync(f);
       });
       return isPathExist ? withoutQuotes : [];
     }
     return [];
   }
 
-  async pasteFiles(action: 'Copy', destinationFolder: string, ...files: Array<string>): Promise<void> {
-    if (action === 'Copy') {
-      await this.writeFiles(...files)
+  async pasteFiles(action: FilesActionType, destinationFolder: string, ...files: Array<string>): Promise<void> {
+    if (action === FilesActionEnum.Copy) {
+      await this.writeFiles(...files);
       const { stdout, stderr } = await execa(`osascript`, ['-ss', pathLib.join(__dirname, 'darwinScript', 'paste_file.applescript'), destinationFolder]);
 
       if (stderr) {
         throw new Error(`cannot read image from clipboard error: ${stderr}`);
       }
     } else {
-      await this.writeFiles(...files)
+      await this.writeFiles(...files);
       const { stdout, stderr } = await execa(`osascript`, ['-ss', pathLib.join(__dirname, 'darwinScript', 'move_file.applescript'), destinationFolder]);
 
       if (stderr) {
@@ -90,14 +91,14 @@ export default class DarwinClipboard {
 
       return bufferFile;
     } catch (error: any) {
-      throw new Error(error)
+      throw new Error(error);
     } finally {
       if (!file) {
         try {
           if (fs.existsSync(path)) {
             await fs.unlink(path);
           }
-        } catch { }
+        } catch {}
       }
     }
   }
@@ -125,7 +126,7 @@ export default class DarwinClipboard {
           if (fs.existsSync(path)) {
             await fs.unlink(path);
           }
-        } catch { }
+        } catch {}
       }
     }
   }

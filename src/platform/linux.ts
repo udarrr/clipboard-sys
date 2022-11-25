@@ -1,23 +1,23 @@
 import execa = require('execa');
 import fs from 'fs-extra';
 import pathLib from 'path';
-import { SysClipboard } from '../..';
+import { FilesActionEnum, FilesActionType, SysClipboard } from '../..';
 
 export default class LinuxClipboard implements SysClipboard {
   async readFiles(): Promise<Array<string>> {
     const files = await this.readText();
 
     if (files) {
-      const isPathExist = files.split(' ').every(f => {
-        return fs.existsSync(f)
-      })
+      const isPathExist = files.split(' ').every((f) => {
+        return fs.existsSync(f);
+      });
       return isPathExist ? files.split(' ') : [];
     }
     return [];
   }
 
-  async pasteFiles(action: 'Copy' | 'Cut', destinationFolder: string, ...files: Array<string>): Promise<void> {
-    if (action === 'Copy') {
+  async pasteFiles(action: FilesActionType, destinationFolder: string, ...files: Array<string>): Promise<void> {
+    if (action === FilesActionEnum.Copy) {
       await execa(`xclip-copyfile ${files.join(' ')}`, {
         stdio: 'inherit',
         shell: true,
@@ -30,27 +30,27 @@ export default class LinuxClipboard implements SysClipboard {
     }
     await execa(`xclip-pastefile`, {
       shell: true,
-      cwd: destinationFolder
+      cwd: destinationFolder,
     });
   }
 
   async writeFiles(...files: string[]): Promise<boolean> {
-    const isPathExist = files.every(f => {
-      return fs.existsSync(f)
-    })
+    const isPathExist = files.every((f) => {
+      return fs.existsSync(f);
+    });
     if (!isPathExist) {
-      throw new Error(`No such paths ${files.join(' ')}`)
-    };
+      throw new Error(`No such paths ${files.join(' ')}`);
+    }
 
-    const dirNames = files.map(f => {
-      return pathLib.dirname(f)
+    const dirNames = files.map((f) => {
+      return pathLib.dirname(f);
     });
     const formattedDir = dirNames.join(' ');
-    const formattedBase = files.map(f => {
+    const formattedBase = files.map((f) => {
       const base = pathLib.basename(f);
 
-      return `-o -name "${base}"`
-    })
+      return `-o -name "${base}"`;
+    });
     if (formattedBase.length) {
       formattedBase[0] = formattedBase[0].replace('-o', '');
     }
@@ -108,7 +108,7 @@ export default class LinuxClipboard implements SysClipboard {
   }
 
   async writeImage(file: string | Buffer): Promise<void> {
-    let path = ''
+    let path = '';
 
     if (typeof file !== 'string') {
       const pathToTemp = pathLib.join(process.cwd(), 'temp.png');
@@ -129,7 +129,7 @@ export default class LinuxClipboard implements SysClipboard {
 
     if (stderr) {
       throw new Error(`cannot read file by path ${file}`);
-    };
+    }
 
     try {
       await execa(`xclip -selection clipboard -t ${stdout} -i ${path}`, {
@@ -145,7 +145,7 @@ export default class LinuxClipboard implements SysClipboard {
         if (fs.existsSync(path)) {
           await fs.unlink(path);
         }
-      } catch { }
+      } catch {}
     }
   }
 }

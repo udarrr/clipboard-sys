@@ -1,7 +1,7 @@
 import execa from 'execa';
 import fs from 'fs-extra';
 import pathLib from 'path';
-import { SysClipboard } from '../..';
+import { FilesActionEnum, FilesActionType, SysClipboard } from '../..';
 
 export default class WindowsClipboard implements SysClipboard {
   async readText(): Promise<string> {
@@ -96,14 +96,14 @@ export default class WindowsClipboard implements SysClipboard {
     }
   }
 
-  async pasteFiles(action: 'Copy' | 'Cut', destinationFolder: string, ...files: Array<string>): Promise<void> {
-    if(files && files.length){
+  async pasteFiles(action: FilesActionType, destinationFolder: string, ...files: Array<string>): Promise<void> {
+    if (files && files.length) {
       await this.writeFiles(...files);
     }
     const { stderr } = await execa(
       `powershell -Command Add-Type -AssemblyName System.Windows.Forms; "$fileDrop = get-clipboard -Format FileDropList; if($fileDrop -eq $null) { write-host 'No files on the clipboard'; return } foreach($file in $fileDrop) {if (Test-Path $file) {if($file.Mode.StartsWith('d')) { $source = join-path $file.Directory $file.Name; Invoke-Expression '${
         action === 'Copy' ? 'copy' : 'move'
-      }-item -Recurse $source $($file.Name)'} else {$file.Name; $file | ${action === 'Copy' ? 'copy' : 'move'}-item -Destination "${destinationFolder}"}}}"`,
+      }-item -Recurse $source $($file.Name)'} else {$file.Name; $file | ${action === FilesActionEnum.Copy ? 'copy' : 'move'}-item -Destination "${destinationFolder}"}}}"`,
       {
         stripFinalNewline: false,
       },
