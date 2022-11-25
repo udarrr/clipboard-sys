@@ -12,7 +12,7 @@ Supports:
 
 - Windows
 - Linux (xclip supporting systems) *should be installed xclip (`sudo apt install xclip`)*
-- MacOS (text, images)
+- MacOS
 
 ## Install
 
