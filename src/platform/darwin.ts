@@ -1,19 +1,51 @@
 import execa = require('execa');
 import fs from 'fs-extra';
 import pathLib from 'path';
-import { SysClipboard } from '../..';
 
-export default class DarwinClipboard implements SysClipboard {
-  async readFiles(): Promise<Array<string>> {
-    throw new Error('Not implemented yet');
+export default class DarwinClipboard {
+  async readFiles(): Promise<any> {
+    const { stdout, stderr } = await execa(`osascript`, ['-ss', pathLib.join(__dirname, 'darwinScript', 'read_file.applescript')], { shell: true });
+
+    if (stderr) {
+      throw new Error(`cannot read image from clipboard error: ${stderr}`);
+    }
+    const files = stdout.split('\n');
+
+    if (files.length) {
+      const withoutQuotes = files.map(f => f.replace('"', ''))
+      const isPathExist = withoutQuotes.every(f => {
+        return fs.existsSync(f)
+      });
+      return isPathExist ? withoutQuotes : [];
+    }
+    return [];
   }
 
   async pasteFiles(action: 'Copy', destinationFolder: string, ...files: Array<string>): Promise<void> {
-    throw new Error('Not implemented yet');
+    if (action === 'Copy') {
+      await this.writeFiles(...files)
+      const { stdout, stderr } = await execa(`osascript`, ['-ss', pathLib.join(__dirname, 'darwinScript', 'paste_file.applescript'), destinationFolder]);
+
+      if (stderr) {
+        throw new Error(`cannot read image from clipboard error: ${stderr}`);
+      }
+    } else {
+      await this.writeFiles(...files)
+      const { stdout, stderr } = await execa(`osascript`, ['-ss', pathLib.join(__dirname, 'darwinScript', 'move_file.applescript'), destinationFolder]);
+
+      if (stderr) {
+        throw new Error(`cannot read image from clipboard error: ${stderr}`);
+      }
+    }
   }
 
   async writeFiles(...files: string[]): Promise<boolean> {
-    throw new Error('Not implemented yet');
+    const { stdout, stderr } = await execa(`osascript`, ['-ss', pathLib.join(__dirname, 'darwinScript', 'copy_file.applescript'), ...files]);
+
+    if (stderr) {
+      throw new Error(`cannot read image from clipboard error: ${stderr}`);
+    }
+    return !!stdout;
   }
 
   async readText(): Promise<string> {
