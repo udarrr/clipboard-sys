@@ -48,29 +48,33 @@ export default class WindowsClipboard implements SysClipboard {
   async writeImage(file: string | Buffer): Promise<void> {
     let path = '';
 
-    if (typeof file !== 'string') {
-      const pathToTemp = pathLib.join(process.cwd(), 'temp.png');
-      await fs.writeFile(pathToTemp, file);
+    try {
+      if (typeof file !== 'string') {
+        const pathToTemp = pathLib.join(process.cwd(), 'temp.png');
+        await fs.writeFile(pathToTemp, file);
 
-      if (await fs.existsSync(pathToTemp)) {
-        path = pathToTemp;
-      }
-    } else {
-      path = file;
-    }
-
-    const { stderr } = await execa(`powershell -Command Add-Type -AssemblyName System.Windows.Forms; "[Windows.Forms.Clipboard]::SetImage([System.Drawing.Image]::FromFile('${path}'));"`);
-
-    if (typeof file !== 'string') {
-      try {
-        if (fs.existsSync(path)) {
-          await fs.unlink(path);
+        if (await fs.existsSync(pathToTemp)) {
+          path = pathToTemp;
         }
-      } catch {}
-    }
+      } else {
+        path = file;
+      }
 
-    if (stderr) {
-      throw new Error(`cannot write image to clipboard error: ${stderr}`);
+      const { stderr } = await execa(`powershell -Command Add-Type -AssemblyName System.Windows.Forms; "[Windows.Forms.Clipboard]::SetImage([System.Drawing.Image]::FromFile('${path}'));"`);
+
+      if (stderr) {
+        throw new Error(`cannot write image to clipboard error: ${stderr}`);
+      }
+    } catch (err: any) {
+      throw new Error(err.message);
+    } finally {
+      if (typeof file !== 'string') {
+        try {
+          if (fs.existsSync(path)) {
+            await fs.unlink(path);
+          }
+        } catch {}
+      }
     }
   }
 
