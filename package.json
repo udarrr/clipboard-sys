@@ -48,11 +48,11 @@
     "prepack": "clean-package --remove scripts",
     "postpack": "clean-package restore",
     "clean": "rimraf dist",
-    "build": "npm run clean && tsc -p . && npm run copy-files",
+    "compile": "npm run clean && tsc -p . && npm run copy-files",
     "pack": "npm pack",
     "prepublishOnly": "npm run build",
     "copy-files": "copyfiles -f ./src/platform/darwinScript/*.applescript ./dist/src/platform/darwinScript/",
-    "test": "npm run build && mocha ./dist/tests/specs.js --no-timeout ",
+    "test": "npm run compile && mocha ./dist/tests/specs.js --no-timeout ",
     "publish_package": "npm publish --tag latest --access=public"
   },
   "devDependencies": {
