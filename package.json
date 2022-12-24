@@ -50,7 +50,7 @@
     "clean": "rimraf dist",
     "compile": "npm run clean && tsc -p . && npm run copy-files",
     "pack": "npm pack",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "npm run compile",
     "copy-files": "copyfiles -f ./src/platform/darwinScript/*.applescript ./dist/src/platform/darwinScript/",
     "test": "npm run compile && mocha ./dist/tests/specs.js --no-timeout ",
     "publish_package": "npm publish --tag latest --access=public"
