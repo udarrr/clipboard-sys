@@ -52,7 +52,7 @@
     "pack": "npm pack",
     "prepublishOnly": "npm run build",
     "copy-files": "copyfiles -f ./src/platform/darwinScript/*.applescript ./dist/src/platform/darwinScript/",
-    "test": "npm run build && mocha ./dist/tests/specs.js --no-timeout || exit 0",
+    "test": "npm run build && mocha ./dist/tests/specs.js --no-timeout ",
     "publish_package": "npm publish --tag latest --access=public"
   },
   "devDependencies": {

@@ -40,4 +40,6 @@ jobs:
       - name: Build
         run: npm run build
       - name: Run tests
-        run: npm run test
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          run: npm run test
