@@ -1,6 +1,6 @@
 {
   "name": "clipboard-sys",
-  "version": "0.9.7",
+  "version": "1.0.2",
   "description": "Cross platform node system clipboard work with text, image, files",
   "main": "dist/index",
   "types": "dist",
@@ -45,13 +45,15 @@
   "license": "MIT",
   "homepage": "https://github.com/udarrr/clipboard-sys",
   "scripts": {
+    "prepack": "clean-package --remove scripts",
+    "postpack": "clean-package restore",
     "clean": "rimraf dist",
     "build": "npm run clean && tsc -p . && npm run copy-files",
-    "pretest": "npm pack",
+    "pack": "npm pack",
     "prepublishOnly": "npm run build",
     "copy-files": "copyfiles -f ./src/platform/darwinScript/*.applescript ./dist/src/platform/darwinScript/",
     "test": "npm run build && mocha ./dist/tests/specs.js --no-timeout || exit 0",
-    "publish": "npm publish --tag latest --access=public"
+    "publish_package": "npm publish --tag latest --access=public"
   },
   "devDependencies": {
     "@types/chai": "^4.3.4",
@@ -72,5 +74,10 @@
   "dependencies": {
     "execa": "5.1.1",
     "fs-extra": "^10.1.0"
-  }
+  },
+  "os": [
+    "linux",
+    "darwin",
+    "win32"
+  ]
 }

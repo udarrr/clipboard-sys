@@ -1,5 +1,8 @@
 # clipboard-sys
 
+![Tested](https://github.com/udarrr/clipboard-sys/workflows/Tests/badge.svg)
+![Released](https://github.com/udarrr/clipboard-sys/workflows/Create%20tagged%20release/badge.svg)
+
 > Access the system clipboard
 
 - copy/paste text

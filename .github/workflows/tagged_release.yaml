@@ -1,0 +1,68 @@
+name: Create tagged release
+on:
+  push:
+    tags:
+      - v*.*.*
+
+jobs:
+  test:
+    name: 'Test on Node v${{ matrix.node }} ${{ matrix.os.name }} ${{ matrix.arch }}'
+    runs-on: ${{ matrix.os.name }}-${{ matrix.os.version }}
+
+    strategy:
+      matrix:
+        os:
+          - name: Ubuntu
+            version: latest
+          - name: macOS
+            version: latest
+          - name: Windows
+            version: 2019
+        node: ['14']
+        arch: [x64]
+    steps:
+      - name: 'Install Linux dependencies'
+        if: ${{ matrix.os.name == 'Ubuntu' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev
+          sudo apt-get install xclip
+      - name: Set up Git repository
+        uses: actions/checkout@v2
+      - name: Set up node
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{matrix.node}}
+      - name: 'Install npm@^8'
+        run: npm install --global npm@8.3.1
+      - name: Install
+        run: npm ci --unsafe-perm
+      - name: Build
+        run: npm run build
+      - name: Run tests
+        run: npm run test
+
+  deploy:
+    needs:
+      - test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Git repository
+        uses: actions/checkout@v2
+      - name: Set up node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+          registry-url: 'https://registry.npmjs.org'
+      - name: 'Install npm@^8'
+        run: npm install --global npm@8.3.1
+      - name: Install
+        run: npm ci --unsafe-perm
+      - name: Publish tagged release to npm
+        run: |
+          npm i clean-package -g
+          npm whoami
+          npm run compile
+          npm run publish_package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
