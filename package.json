@@ -72,7 +72,7 @@
     "copyfiles": "^2.4.1"
   },
   "dependencies": {
-    "execa": "5.1.1",
+    "execa": "6.1.0",
     "fs-extra": "^10.1.0"
   },
   "os": [
