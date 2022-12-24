@@ -16,6 +16,7 @@
   "include": [
     "src/platform/**/*.ts",
     "src/**/*.ts",
+    "tests/**/*.ts",
     "index.ts"
   ],
   "exclude": [
