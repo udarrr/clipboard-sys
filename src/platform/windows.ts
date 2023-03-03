@@ -5,43 +5,80 @@ import { FilesActionEnum, FilesActionType, SysClipboard } from '../..';
 
 export default class WindowsClipboard implements SysClipboard {
   async readText(): Promise<string> {
-    const { stdout, stderr } = await execa(
-      `powershell -Command Add-Type -AssemblyName System.Windows.Forms; "if([Windows.Forms.Clipboard]::ContainsText()) {$clip=[Windows.Forms.Clipboard]::GetText(); if ($clip -ne $null) {return $clip }} "`,
-      {
+    try {
+      const { stdout, stderr } = await execa(`${pathLib.join(__dirname, '..', '..', 'bin', 'win_clipboard.exe')}`, ['--read'], {
         stripFinalNewline: true,
-      },
-    );
+      });
 
-    if (stderr) {
-      throw new Error(`cannot read text from clipboard error: ${stderr}`);
+      if (stderr) {
+        throw new Error(`cannot read text from clipboard error: ${stderr}`);
+      }
+
+      return stdout;
+    } catch {
+      const { stdout, stderr } = await execa(
+        `powershell -Command Add-Type -AssemblyName System.Windows.Forms; "if([Windows.Forms.Clipboard]::ContainsText()) {$clip=[Windows.Forms.Clipboard]::GetText(); if ($clip -ne $null) {return $clip }} "`,
+        {
+          stripFinalNewline: true,
+        },
+      );
+
+      if (stderr) {
+        throw new Error(`cannot read text from clipboard error: ${stderr}`);
+      }
+      return stdout;
     }
-    return stdout;
   }
 
   async writeText(text: string): Promise<void> {
-    const { stderr } = await execa('powershell -noprofile -command $input|Set-Clipboard', { input: text });
+    try {
+      const { stderr } = await execa(`${pathLib.join(__dirname, '..', '..', 'bin', 'win_clipboard.exe')}`, ['--write', text]);
 
-    if (stderr) {
-      throw new Error(`cannot write text due to clipboard error: ${stderr}`);
+      if (stderr) {
+        throw new Error(`cannot write text due to clipboard error: ${stderr}`);
+      }
+    } catch {
+      const { stderr } = await execa('powershell -noprofile -command $input|Set-Clipboard', { input: text });
+
+      if (stderr) {
+        throw new Error(`cannot write text due to clipboard error: ${stderr}`);
+      }
     }
   }
 
   async readImage(file?: string): Promise<Buffer> {
-    const { stdout, stderr } = await execa(
-      `powershell -Command Add-Type -AssemblyName System.Windows.Forms; "$clip=[Windows.Forms.Clipboard]::GetImage();if ($clip -ne $null) { $converter = New-Object -TypeName System.Drawing.ImageConverter;$byte_vec = $converter.ConvertTo($clip, [byte[]]); $EncodedText =[Convert]::ToBase64String($byte_vec); return $EncodedText }"`,
-    );
+    try {
+      const { stdout, stderr } = await execa(`${pathLib.join(__dirname, '..', '..', 'bin', 'win_clipboard.exe')}`, ['--readImage']);
 
-    if (stderr) {
-      throw new Error(`cannot read image from clipboard error: ${stderr}`);
-    }
-    let imageBuffer = Buffer.from(stdout, 'base64');
+      if (stderr) {
+        throw new Error(`cannot read image from clipboard error: ${stderr}`);
+      }
+      let imageBuffer = Buffer.from(stdout, 'base64');
 
-    if (file) {
-      await fs.writeFile(file, imageBuffer);
+      if (file) {
+        await fs.writeFile(file, imageBuffer);
 
-      return imageBuffer;
-    } else {
-      return imageBuffer;
+        return imageBuffer;
+      } else {
+        return imageBuffer;
+      }
+    } catch {
+      const { stdout, stderr } = await execa(
+        `powershell -Command Add-Type -AssemblyName System.Windows.Forms; "$clip=[Windows.Forms.Clipboard]::GetImage();if ($clip -ne $null) { $converter = New-Object -TypeName System.Drawing.ImageConverter;$byte_vec = $converter.ConvertTo($clip, [byte[]]); $EncodedText =[Convert]::ToBase64String($byte_vec); return $EncodedText }"`,
+      );
+
+      if (stderr) {
+        throw new Error(`cannot read image from clipboard error: ${stderr}`);
+      }
+      let imageBuffer = Buffer.from(stdout, 'base64');
+
+      if (file) {
+        await fs.writeFile(file, imageBuffer);
+
+        return imageBuffer;
+      } else {
+        return imageBuffer;
+      }
     }
   }
 
@@ -60,10 +97,13 @@ export default class WindowsClipboard implements SysClipboard {
         path = file;
       }
 
-      const { stderr } = await execa(`powershell -Command Add-Type -AssemblyName System.Windows.Forms; "[Windows.Forms.Clipboard]::SetImage([System.Drawing.Image]::FromFile('${path}'));"`);
+      const { stderr } = await execa(`${pathLib.join(__dirname, '..', '..', 'bin', 'win_clipboard.exe')}`, ['--writeImage', path]);
 
       if (stderr) {
-        throw new Error(`cannot write image to clipboard error: ${stderr}`);
+        const { stderr } = await execa(`powershell -Command Add-Type -AssemblyName System.Windows.Forms; "[Windows.Forms.Clipboard]::SetImage([System.Drawing.Image]::FromFile('${path}'));"`);
+        if (stderr) {
+          throw new Error(`cannot write image to clipboard error: ${stderr}`);
+        }
       }
     } catch (err: any) {
       throw new Error(err.message);
@@ -79,24 +119,41 @@ export default class WindowsClipboard implements SysClipboard {
   }
 
   async readFiles() {
-    const { stdout, stderr } = await execa(
-      `powershell -Command Add-Type -AssemblyName System.Windows.Forms; "if ([Windows.Forms.Clipboard]::ContainsFileDropList()) {$files = [Windows.Forms.Clipboard]::GetFileDropList(); return $files"}`,
-      {
-        stripFinalNewline: true,
-      },
-    );
+    try {
+      const { stdout, stderr } = await execa(`${pathLib.join(__dirname, '..', '..', 'bin', 'win_clipboard.exe')}`, ['--readFiles'], { stripFinalNewline: true });
 
-    if (stderr) {
-      throw new Error(`cannot read files from clipboard error: ${stderr}`);
-    }
+      if (stderr) {
+        throw new Error(`cannot read files from clipboard error: ${stderr}`);
+      }
 
-    if (stdout) {
-      const filePaths = stdout.split(/\r\n/g);
-      filePaths.length && filePaths[filePaths.length - 1] === '' ? filePaths.pop() : filePaths;
+      if (stdout) {
+        const filePaths = stdout.split(/\r\n/g);
+        filePaths.length && filePaths[filePaths.length - 1] === '' ? filePaths.pop() : filePaths;
 
-      return filePaths;
-    } else {
-      return [];
+        return filePaths;
+      } else {
+        return [];
+      }
+    } catch {
+      const { stdout, stderr } = await execa(
+        `powershell -Command Add-Type -AssemblyName System.Windows.Forms; "if ([Windows.Forms.Clipboard]::ContainsFileDropList()) {$files = [Windows.Forms.Clipboard]::GetFileDropList(); return $files"}`,
+        {
+          stripFinalNewline: true,
+        },
+      );
+
+      if (stderr) {
+        throw new Error(`cannot read files from clipboard error: ${stderr}`);
+      }
+
+      if (stdout) {
+        const filePaths = stdout.split(/\r\n/g);
+        filePaths.length && filePaths[filePaths.length - 1] === '' ? filePaths.pop() : filePaths;
+
+        return filePaths;
+      } else {
+        return [];
+      }
     }
   }
 
