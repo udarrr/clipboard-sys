@@ -1,6 +1,6 @@
 {
   "name": "clipboard-sys",
-  "version": "1.1.3",
+  "version": "1.1.5",
   "description": "Cross platform node system clipboard work with text, image, files",
   "main": "dist/index",
   "types": "dist",
@@ -48,7 +48,8 @@
     "prepack": "clean-package --remove scripts",
     "postpack": "clean-package restore",
     "clean": "rimraf dist",
-    "compile": "npm run clean && tsc -p . && npm run copy-files",
+    "compile": "npm run clean && tsc -p testPublish.json && npm run copy-files",
+    "compile_tests": "npm run clean && tsc -p tsconfig.json && npm run copy-files",
     "pack": "npm pack",
     "prepublishOnly": "npm run compile",
     "copy-files": "copyfiles -f ./src/platform/darwinScript/*.applescript ./dist/src/platform/darwinScript/ && copyfiles -f ./bin/win_clipboard.exe ./dist/bin",

@@ -16,9 +16,10 @@
   "include": [
     "src/platform/**/*.ts",
     "src/**/*.ts",
+    "tests",
     "index.ts"
   ],
   "exclude": [
-    "node_modules", "test"
+    "node_modules", 
   ]
 }
