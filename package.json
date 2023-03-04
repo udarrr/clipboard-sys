@@ -1,6 +1,6 @@
 {
   "name": "clipboard-sys",
-  "version": "1.1.5",
+  "version": "1.2.0",
   "description": "Cross platform node system clipboard work with text, image, files",
   "main": "dist/index",
   "types": "dist",
@@ -53,7 +53,7 @@
     "pack": "npm pack",
     "prepublishOnly": "npm run compile",
     "copy-files": "copyfiles -f ./src/platform/darwinScript/*.applescript ./dist/src/platform/darwinScript/ && copyfiles -f ./bin/win_clipboard.exe ./dist/bin",
-    "test": "npm run compile && mocha ./dist/tests/specs.js --no-timeout ",
+    "test": "npm run compile_tests && mocha ./dist/tests/specs.js --no-timeout ",
     "publish_package": "npm publish --tag latest --access=public"
   },
   "devDependencies": {
