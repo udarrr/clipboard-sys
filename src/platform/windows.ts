@@ -161,38 +161,58 @@ export default class WindowsClipboard implements SysClipboard {
     if (files && files.length) {
       await this.writeFiles(...files);
     }
-    const { stderr } = await execa(
-      `powershell -Command Add-Type -AssemblyName System.Windows.Forms; "$fileDrop = get-clipboard -Format FileDropList; if($fileDrop -eq $null) { write-host 'No files on the clipboard'; return } foreach($file in $fileDrop) {if (Test-Path $file) {if($file.Mode.StartsWith('d')) { $source = join-path $file.Directory $file.Name; Invoke-Expression '${
-        action === 'Copy' ? 'copy' : 'move'
-      }-item -Recurse $source $($file.Name)'} else {$file.Name; $file | ${action === FilesActionEnum.Copy ? 'copy' : 'move'}-item -Destination "${destinationFolder}"}}}"`,
-      {
-        stripFinalNewline: false,
-      },
-    );
 
-    if (stderr) {
-      throw new Error(`cannot read files from clipboard error: ${stderr}`);
+    try {
+      const { stderr } = await execa(`${pathLib.join(__dirname, '..', '..', 'bin', 'win_clipboard.exe')}`, ['--moveFiles', action, destinationFolder], {
+        stripFinalNewline: false,
+      });
+
+      if (stderr) {
+        throw new Error(`cannot read files from clipboard error: ${stderr}`);
+      }
+    } catch {
+      const { stderr } = await execa(
+        `powershell -Command Add-Type -AssemblyName System.Windows.Forms; "$fileDrop = get-clipboard -Format FileDropList; if($fileDrop -eq $null) { write-host 'No files on the clipboard'; return } foreach($file in $fileDrop) {if (Test-Path $file) {if($file.Mode.StartsWith('d')) { $source = join-path $file.Directory $file.Name; Invoke-Expression '${
+          action === 'Copy' ? 'copy' : 'move'
+        }-item -Recurse $source $($file.Name)'} else {$file.Name; $file | ${action === FilesActionEnum.Copy ? 'copy' : 'move'}-item -Destination "${destinationFolder}"}}}"`,
+        {
+          stripFinalNewline: false,
+        },
+      );
+
+      if (stderr) {
+        throw new Error(`cannot read files from clipboard error: ${stderr}`);
+      }
     }
   }
 
   async writeFiles(...files: Array<string>): Promise<boolean> {
     const formattedFiles: Array<string> = [];
 
-    files.forEach((f) => {
-      formattedFiles.push(`('${f}')`);
-    });
-    const { stdout, stderr } = await execa(
-      `powershell -Command Add-Type -AssemblyName System.Windows.Forms; "$files = [System.Collections.Specialized.StringCollection]::new(); $files.AddRange(@(${formattedFiles.join(
-        ',',
-      )})); [Windows.Forms.Clipboard]::SetFileDropList($files);`,
-      {
-        stripFinalNewline: false,
-      },
-    );
+    try {
+      const { stdout, stderr } = await execa(`${pathLib.join(__dirname, '..', '..', 'bin', 'win_clipboard.exe')}`, ['--writeFiles', files.join(',')], { stripFinalNewline: false });
 
-    if (stderr) {
-      throw new Error(`cannot read files from clipboard error: ${stderr}`);
+      if (stderr) {
+        throw new Error(`cannot read files from clipboard error: ${stderr}`);
+      }
+      return +stdout === 0;
+    } catch {
+      files.forEach((f) => {
+        formattedFiles.push(`('${f}')`);
+      });
+      const { stdout, stderr } = await execa(
+        `powershell -Command Add-Type -AssemblyName System.Windows.Forms; "$files = [System.Collections.Specialized.StringCollection]::new(); $files.AddRange(@(${formattedFiles.join(
+          ',',
+        )})); [Windows.Forms.Clipboard]::SetFileDropList($files);`,
+        {
+          stripFinalNewline: false,
+        },
+      );
+
+      if (stderr) {
+        throw new Error(`cannot read files from clipboard error: ${stderr}`);
+      }
+      return +stdout === 0;
     }
-    return +stdout === 0;
   }
 }
