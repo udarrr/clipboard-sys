@@ -1,6 +1,6 @@
 {
   "name": "clipboard-sys",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Cross platform node system clipboard work with text, image, files",
   "main": "dist/index",
   "types": "dist",

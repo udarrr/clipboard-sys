@@ -6,7 +6,7 @@ export enum FilesActionEnum {
   Copy = 'Copy',
   Cut = 'Cut',
 }
-export type FilesActionType = `${FilesActionEnum}`;
+export type FilesActionType = 'Copy' | 'Cut';
 export interface SysClipboard {
   readText(): Promise<string>;
   writeText(text: string): Promise<void>;
